@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:music_mates_app/data/data_export.dart';
 import 'package:music_mates_app/data/model/home_model.dart';
+import 'package:music_mates_app/presentation/query_document_provider.dart';
+import 'package:music_mates_app/presentation/query_wrapper.dart';
 import 'package:music_mates_app/presentation/widgets/export.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,7 +25,16 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: backgroundColor,
         title: const Text("Music Mates"),
       ),
-      body: _Content(homeModel: homeModel),
+      body: QueryWrapper<HomeModel>(
+        queryString: context.queries.fetchUserInfo(),
+        dataParser: (json) => HomeModel.fromJson(json),
+        variables: {
+          'googleId': context.retrieveGoogleId,
+        },
+        contentBuilder: (data) {
+          return _Content(homeModel: data);
+        },
+      ),
     );
   }
 }

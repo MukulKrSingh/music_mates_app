@@ -1,23 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:music_mates_app/data/data_export.dart';
 import 'package:music_mates_app/presentation/presentation_export.dart';
+import 'package:music_mates_app/presentation/query_document_provider.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final GraphQLClient client;
+  late final ValueNotifier<GraphQLClient> clientNotifier;
+
+  @override
+  void initState() {
+    client = GraphQLClient(
+      link: HttpLink('https://music-mates-fun.herokuapp.com/graphql'),
+      cache: GraphQLCache(),
+    );
+    clientNotifier = ValueNotifier<GraphQLClient>(client);
+    super.initState();
+  }
+
+  final queries = MusicMateQueries();
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Music Mates',
-      theme: _themeData(context),
-      home: const GetStartedScreen(),
-      routes: {
-        Routes.home: (context) => const HomeScreen(),
-        Routes.selectArtist: (context) => const SelectFavouriteArtist(),
-      },
+    return QueriesDocumentProvider(
+      queries: queries,
+      child: GraphQLProvider(
+        client: clientNotifier,
+        child: MaterialApp(
+          title: 'Music Mates',
+          theme: _themeData(context),
+          home: const GetStartedScreen(),
+          routes: {
+            Routes.home: (context) => const HomeScreen(),
+            Routes.selectArtist: (context) => const SelectFavouriteArtist(),
+          },
+        ),
+      ),
     );
   }
 
